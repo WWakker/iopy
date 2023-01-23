@@ -1,0 +1,5 @@
+[run]
+omit = res/*
+       **/__about__.py
+       **/adjust_source_in_covxml.py
+       **/update_badge.py

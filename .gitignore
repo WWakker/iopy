@@ -1,0 +1,12 @@
+.idea
+.coverage
+.pytest_cache
+.bash_history
+.cache/
+.git-credentials
+.ipython/
+.local/
+.pip/
+**/__pycache__/
+**/.temp_data/
+
