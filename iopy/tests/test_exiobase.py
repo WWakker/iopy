@@ -4,7 +4,6 @@
 
 """
 from iopy import ExioBase
-t
 
 
 class TestExioBase:

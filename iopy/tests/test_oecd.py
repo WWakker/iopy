@@ -85,19 +85,23 @@ class TestOECD:
             oecd._shock(model='ghosh', shock=-10, regions=EA, sectors=['35']))
 
     def test_plot(self):
-        fig, ax = oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'], plot=True, show=False)
+        fig, ax = oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'], plot_regions=EA, plot=True, show=False)
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, plt.Axes)
 
-        fig, ax1 = oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'], plot=True, show=True,
+        fig, ax1 = oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'], plot=True, plot_regions=EA, show=True,
                                            plot_by='sector')
-        fig, ax2 = oecd.ghosh_supply_shock(shock=10, regions=EA, sectors=['35'], plot=True, show=True,
+        fig, ax2 = oecd.ghosh_supply_shock(shock=10, regions=EA, sectors=['35'], plot=True, plot_regions=EA, show=True,
                                            plot_by='sector')
         assert [x.get_text() for x in ax1.get_yticklabels()[::-1]] == [x.get_text() for x in ax2.get_yticklabels()]
 
         with pytest.raises(ValueError):
             oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'],
                                     plot=True, show=True, plot_by='region', plot_regions=EA + ['something'])
+
+        with pytest.raises(ValueError):
+            oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'],
+                                    plot=True, show=True, plot_by='region')
 
     def test_get_imports_exports(self):
 
