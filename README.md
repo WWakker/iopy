@@ -67,7 +67,7 @@ x = Zi + f
 \end{equation} 
 ```
 
-We define a matrix A by dividing each column in Z by the total input, such that $`a_{ij} = z_{ij}/x_{j}`$, as
+We define a matrix A by dividing each column in Z by the total input, such that $a_{ij} = z_{ij}/x_{j}$, as
 
 ```math
 \begin{equation} 
@@ -86,10 +86,10 @@ x = Ax + f
 It follows that 
 
 ```math
-f = x - Ax = (I - A)x \Rarr x = (I - A)^{-1}f
+f = x - Ax = (I - A)x \Rightarrow x = (I - A)^{-1}f
 ```
 
-Here, $`(I - A)^{-1}`$ is the so-called Leontief inverse **L**, so the equation can be written as
+Here, $(I - A)^{-1}$ is the so-called Leontief inverse **L**, so the equation can be written as
 
 ```math
 \begin{equation} 
@@ -108,7 +108,7 @@ This is the Leontief equation, which defines the relation between output and fin
 ### Ghosh model
 
 Where Leontief relates sectoral outputs to the amount of final product, or products leaving the system, 
-Ghosh (1958) relates sectoral production to the primary inputs $`v'`$, or value entering the system. Instead of (1), 
+Ghosh (1958) relates sectoral production to the primary inputs $v'$, or value entering the system. Instead of (1), 
 output is then expressed as
 
 ```math
@@ -138,10 +138,10 @@ x' = x'B + v'
 then
 
 ```math
-v' = x' - x'B = (I - B)x' \Rarr x' = v'(I - B)^{-1}
+v' = x' - x'B = (I - B)x' \Rightarrow x' = v'(I - B)^{-1}
 ```
 
-Similarly, $`(I - B)^{-1}`$ is called the Ghosh inverse **G**, so the equation can be written as
+Similarly, $(I - B)^{-1}$ is called the Ghosh inverse **G**, so the equation can be written as
 
 ```math
 \begin{equation} 
