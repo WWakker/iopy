@@ -24,7 +24,7 @@ THE OECD input-output tables contain inputs and outputs in current million USD f
 as rest-of-world. China and Mexico data are split into CN1, CN2, MX1, and MX2.
 
 ![OECD sctructure](res/OECD_structure.png)
-*source*: OECD
+*Source*: OECD
 
 **Z** contains the intermediate inputs and outputs between industries. Rows represent outputs and 
 columns represent inputs. Of course, not all outputs serve as input for other industries, as some products are final 
