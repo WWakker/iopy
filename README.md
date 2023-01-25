@@ -13,8 +13,9 @@ Currently the following databases are supported:
 - [ExioBase](https://www.exiobase.eu/)
 
 ## Installation
-# TODO: add
-
+```bash
+pip install git+https://github.com/WWakker/iopy.git
+```
 
 ## Structure of input-output data
 
