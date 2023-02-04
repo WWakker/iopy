@@ -271,7 +271,7 @@ Oosterhaven, J. (1988). [On the plausibility of the supply-driven input-output m
 
 ## Contributors
 
-Simone Boldrini, 2022
+[Simone Boldrini](https://github.com/simoboldrini), 2022
 
 ## Author
 
