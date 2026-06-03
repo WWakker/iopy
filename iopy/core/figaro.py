@@ -46,8 +46,8 @@ class Figaro(IO):
         """
 
         Args:
-            version: Edition (year of publication), e.g. '2022'
-            year: Year from 2010 to 2020
+            version: Edition (year of publication), e.g. '2025'
+            year: Year; availability depends on the edition (e.g. 2010-2023 for '2025')
             kind: industry-by-industry (default) or product-by-product
             refresh: Download the data even if it exists on the hard drive
         """

@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-f = Figaro(version='2022', year=2018, kind='industry-by-industry')
+f = Figaro(version='2025', year=2018, kind='industry-by-industry')
 
 custom_shock_vector = np.random.uniform(size=f.rs, low=-10, high=10).reshape(-1, 1)
 
@@ -19,12 +19,12 @@ EA = ['AT', 'BE', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT', 'L
 class TestFigaro:
 
     def test_download(self):
-        Figaro(version='2022', year=2018, refresh=True)
+        Figaro(version='2025', year=2018, refresh=True)
 
     def test_load(self):
-        fi = Figaro(version='2022', year=2018, kind='industry-by-industry')
+        fi = Figaro(version='2025', year=2018, kind='industry-by-industry')
         assert set(fi.sectors).issubset(fi.sector_name_mapping)
-        fi = Figaro(version='2022', year=2018, kind='product-by-product')
+        fi = Figaro(version='2025', year=2018, kind='product-by-product')
         assert set(fi.sectors).issubset(fi.sector_name_mapping)
 
     def test_matrices(self):
@@ -107,19 +107,19 @@ class TestFigaro:
                                                 export_regions='AU',
                                                 import_sectors=None,
                                                 export_sectors=None,
-                                                use_type='intermediate'), 86280.8749)
+                                                use_type='intermediate'), 72202.248)
 
         assert np.isclose(f.get_imports_exports(import_regions='CN',
                                                 export_regions='AU',
                                                 import_sectors=None,
                                                 export_sectors=None,
-                                                use_type='final'), 13770.405)
+                                                use_type='final'), 8212.555)
 
         assert np.isclose(f.get_imports_exports(import_regions=['CN'],
                                                 export_regions='AU',
                                                 import_sectors=None,
                                                 export_sectors=None,
-                                                use_type='both'), 86280.8749 + 13770.405)
+                                                use_type='both'), 72202.248 + 8212.555)
 
         f.get_imports_exports(import_regions=['CN'],
                               export_regions='AU',
