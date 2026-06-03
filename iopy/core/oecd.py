@@ -3,7 +3,8 @@
 **Authors**: W. Wakker
 
 """
-from iopy.core.mappings import oecd_sector_name_mapping, oecd_demand_items, oecd_sector_2022_2021_mapping
+from iopy.core.mappings import oecd_sector_name_mapping, oecd_sector_name_mapping_2025, oecd_demand_items, \
+    oecd_sector_2022_2021_mapping
 from iopy.core.matrix import Matrix
 from functools import lru_cache
 import numpy as np
@@ -26,15 +27,15 @@ db_name = os.path.basename(__file__).rstrip('.py')
 def process_df(df):
     if df.shape[0] > 1 and df.shape[1] > 1:
         return (df,
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_')],
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_')])
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_', n=1)],
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_', n=1)])
     elif df.shape[0] == 1:
         return (df,
                 df.index.to_list(),
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_')])
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_', n=1)])
     else:
         return (df,
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_')],
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_', n=1)],
                 df.columns.to_list())
 
 
@@ -128,7 +129,8 @@ class OECD(IO):
             self.regions = list(sorted(np.unique([r for r, s in self.Z.rows])))
             self.sectors = list(sorted(np.unique([s for r, s in self.Z.rows])))
             self.unit = 'Million USD'
-            self.sector_name_mapping = oecd_sector_name_mapping
+            self.sector_name_mapping = oecd_sector_name_mapping_2025 if version in ('2025-extended', '2025-regular') \
+                else oecd_sector_name_mapping
             self.demand_items = oecd_demand_items
             self.reference = f'OECD ({self.version[:4]}), OECD Inter-Country Input-Output Database, http://oe.cd/icio'
             self.contact = 'ICIO-TiVA.Contact@oecd.org, mentioning ICIO'

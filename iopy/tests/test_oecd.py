@@ -28,6 +28,10 @@ class TestOECD:
         assert set(o.sectors).issubset(o.sector_name_mapping)
         o = OECD(version='2022-small', year=2018)
         assert set(o.sectors).issubset(o.sector_name_mapping)
+        o = OECD(version='2025-extended', year=2022)
+        assert set(o.sectors).issubset(o.sector_name_mapping)
+        o = OECD(version='2025-regular', year=2022)
+        assert set(o.sectors).issubset(o.sector_name_mapping)
 
     def test_matrices(self):
         for attr in ['Z', 'A', 'B', 'L', 'G', 'V', 'FD', 'X']:
