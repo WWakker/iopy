@@ -15,7 +15,7 @@ from iopy.core.config import config
 from iopy.core.base_io import IO
 from warnings import warn
 from iopy.core.globals import DATA_FOLDER, FILES_LOG
-from iopy.core.utils import remove_downloaded_files
+from iopy.core.utils import remove_downloaded_files, download_file
 
 db_name = os.path.basename(__file__).rstrip('.py')
 
@@ -170,13 +170,8 @@ class ExioBase(IO):
         return z_raw, fd_raw, x_raw, metadata, sector_codes, FD_codes
 
     def _download_data(self):
-        import requests
-
         try:
-            r = requests.get(self._url, stream=True)
-            with open(self._data_file, "wb") as f:
-                for chunk in r.iter_content(1024 * 5):
-                    f.write(chunk)
+            download_file(self._url, self._data_file)
             with open(FILES_LOG, 'a') as files_log:
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:

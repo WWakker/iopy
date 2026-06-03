@@ -3,102 +3,81 @@
 **Authors**: W. Wakker
 
 """
+
+
+def _chunk_links(base, chunks):
+    """Expand ``{filename: (start_year, end_year)}`` into ``{year: url}``.
+
+    OECD distributes each ICIO edition as a handful of multi-year zip archives
+    (e.g. ``2016-2022_SML.zip`` holds one CSV per year), so every year in a range
+    resolves to the same download URL.
+    """
+    return {year: base + filename
+            for filename, (start, end) in chunks.items()
+            for year in range(start, end + 1)}
+
+
 config = {
     'oecd':
         {'2021':
-             {'links':
-                  {1995: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=91d8e84b-7406-46b9-af5f-ec096242755c',
-                   1996: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=91d8e84b-7406-46b9-af5f-ec096242755c',
-                   1997: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=91d8e84b-7406-46b9-af5f-ec096242755c',
-                   1998: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=91d8e84b-7406-46b9-af5f-ec096242755c',
-                   1999: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=91d8e84b-7406-46b9-af5f-ec096242755c',
-                   2000: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8adf89dd-18b4-40fe-bc7f-c822052eb961',
-                   2001: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8adf89dd-18b4-40fe-bc7f-c822052eb961',
-                   2002: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8adf89dd-18b4-40fe-bc7f-c822052eb961',
-                   2003: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8adf89dd-18b4-40fe-bc7f-c822052eb961',
-                   2004: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8adf89dd-18b4-40fe-bc7f-c822052eb961',
-                   2005: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=fe218690-0a3b-44aa-a82c-b3e3da6d24db',
-                   2006: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=fe218690-0a3b-44aa-a82c-b3e3da6d24db',
-                   2007: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=fe218690-0a3b-44aa-a82c-b3e3da6d24db',
-                   2008: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=fe218690-0a3b-44aa-a82c-b3e3da6d24db',
-                   2009: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=fe218690-0a3b-44aa-a82c-b3e3da6d24db',
-                   2010: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=2c2f499f-5703-4034-9457-2f7518e8f2fc',
-                   2011: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=2c2f499f-5703-4034-9457-2f7518e8f2fc',
-                   2012: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=2c2f499f-5703-4034-9457-2f7518e8f2fc',
-                   2013: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=2c2f499f-5703-4034-9457-2f7518e8f2fc',
-                   2014: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=2c2f499f-5703-4034-9457-2f7518e8f2fc',
-                   2015: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=59a3d7f2-3f23-40d5-95ca-48da84c0f861',
-                   2016: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=59a3d7f2-3f23-40d5-95ca-48da84c0f861',
-                   2017: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=59a3d7f2-3f23-40d5-95ca-48da84c0f861',
-                   2018: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=59a3d7f2-3f23-40d5-95ca-48da84c0f861'},
-              'regex_id': r'[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}',
+             {'links': _chunk_links('https://webfs-sti.oecd.org/files/STI-PIE/ICIO/2021/', {
+                  'ICIO2021_1995-1999.zip': (1995, 1999),
+                  'ICIO2021_2000-2004.zip': (2000, 2004),
+                  'ICIO2021_2005-2009.zip': (2005, 2009),
+                  'ICIO2021_2010-2014.zip': (2010, 2014),
+                  'ICIO2021_2015-2018.zip': (2015, 2018),
+              }),
+              'regex_id': r'ICIO2021_[0-9]{4}-[0-9]{4}',
               'num_regions': 71,
               'num_sectors': 45
               },
          '2022-extended':
-             {'links':
-                  {1995: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=4a2d6739-f717-48ac-a97b-d95f96984c55',
-                   1996: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=4a2d6739-f717-48ac-a97b-d95f96984c55',
-                   1997: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=4a2d6739-f717-48ac-a97b-d95f96984c55',
-                   1998: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=4a2d6739-f717-48ac-a97b-d95f96984c55',
-                   1999: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=4a2d6739-f717-48ac-a97b-d95f96984c55',
-                   2000: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8eb6cf87-1899-4547-b337-d76dd4ef608c',
-                   2001: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8eb6cf87-1899-4547-b337-d76dd4ef608c',
-                   2002: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8eb6cf87-1899-4547-b337-d76dd4ef608c',
-                   2003: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8eb6cf87-1899-4547-b337-d76dd4ef608c',
-                   2004: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8eb6cf87-1899-4547-b337-d76dd4ef608c',
-                   2005: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=f9b6dd9a-e64b-47fb-832e-bd1628c43b72',
-                   2006: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=f9b6dd9a-e64b-47fb-832e-bd1628c43b72',
-                   2007: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=f9b6dd9a-e64b-47fb-832e-bd1628c43b72',
-                   2008: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=f9b6dd9a-e64b-47fb-832e-bd1628c43b72',
-                   2009: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=f9b6dd9a-e64b-47fb-832e-bd1628c43b72',
-                   2010: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=35cfb172-2cc4-4d62-98e5-9e5f1c51d6c9',
-                   2011: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=35cfb172-2cc4-4d62-98e5-9e5f1c51d6c9',
-                   2012: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=35cfb172-2cc4-4d62-98e5-9e5f1c51d6c9',
-                   2013: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=35cfb172-2cc4-4d62-98e5-9e5f1c51d6c9',
-                   2014: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=35cfb172-2cc4-4d62-98e5-9e5f1c51d6c9',
-                   2015: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=e5368118-b274-4e42-820e-33dacbfb94ed',
-                   2016: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=e5368118-b274-4e42-820e-33dacbfb94ed',
-                   2017: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=e5368118-b274-4e42-820e-33dacbfb94ed',
-                   2018: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=e5368118-b274-4e42-820e-33dacbfb94ed',
-                   2019: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=e5368118-b274-4e42-820e-33dacbfb94ed',
-                   2020: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=92539517-1661-4077-a9df-136abc39b858'},
-              'regex_id': r'[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}',
+             {'links': _chunk_links('https://webfs-sti.oecd.org/files/STI-PIE/ICIO/2023/', {
+                  '1995-2000_EXT.zip': (1995, 2000),
+                  '2001-2005_EXT.zip': (2001, 2005),
+                  '2006-2010_EXT.zip': (2006, 2010),
+                  '2011-2015_EXT.zip': (2011, 2015),
+                  '2016-2020_EXT.zip': (2016, 2020),
+              }),
+              'regex_id': r'2023/[0-9]{4}-[0-9]{4}_EXT',
               'num_regions': 81,
               'num_sectors': 45},
          '2022-small':
-             {'links':
-                  {1995: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8f69e3c5-8bc0-4c7b-aad2-5ef776c119ea',
-                   1996: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8f69e3c5-8bc0-4c7b-aad2-5ef776c119ea',
-                   1997: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8f69e3c5-8bc0-4c7b-aad2-5ef776c119ea',
-                   1998: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8f69e3c5-8bc0-4c7b-aad2-5ef776c119ea',
-                   1999: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=8f69e3c5-8bc0-4c7b-aad2-5ef776c119ea',
-                   2000: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=43e7a690-c1ea-4839-b0fb-907e0aa79523',
-                   2001: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=43e7a690-c1ea-4839-b0fb-907e0aa79523',
-                   2002: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=43e7a690-c1ea-4839-b0fb-907e0aa79523',
-                   2003: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=43e7a690-c1ea-4839-b0fb-907e0aa79523',
-                   2004: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=43e7a690-c1ea-4839-b0fb-907e0aa79523',
-                   2005: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=9942ca81-9137-4926-adcf-dbe19fa2bcb6',
-                   2006: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=9942ca81-9137-4926-adcf-dbe19fa2bcb6',
-                   2007: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=9942ca81-9137-4926-adcf-dbe19fa2bcb6',
-                   2008: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=9942ca81-9137-4926-adcf-dbe19fa2bcb6',
-                   2009: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=9942ca81-9137-4926-adcf-dbe19fa2bcb6',
-                   2010: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=832d60ce-8346-456b-8ab8-cafd81c2f054',
-                   2011: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=832d60ce-8346-456b-8ab8-cafd81c2f054',
-                   2012: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=832d60ce-8346-456b-8ab8-cafd81c2f054',
-                   2013: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=832d60ce-8346-456b-8ab8-cafd81c2f054',
-                   2014: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=832d60ce-8346-456b-8ab8-cafd81c2f054',
-                   2015: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=ac018f80-6899-4395-af52-5c21134c51b3',
-                   2016: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=ac018f80-6899-4395-af52-5c21134c51b3',
-                   2017: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=ac018f80-6899-4395-af52-5c21134c51b3',
-                   2018: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=ac018f80-6899-4395-af52-5c21134c51b3',
-                   2019: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=ac018f80-6899-4395-af52-5c21134c51b3',
-                   2020: 'https://stats.oecd.org/wbos/fileview2.aspx?IDFile=60d244bd-5b40-4be3-bd93-0dc35c210ece'},
-              'regex_id': r'[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}',
+             {'links': _chunk_links('https://webfs-sti.oecd.org/files/STI-PIE/ICIO/2023/', {
+                  '1995-2000_SML.zip': (1995, 2000),
+                  '2001-2005_SML.zip': (2001, 2005),
+                  '2006-2010_SML.zip': (2006, 2010),
+                  '2011-2015_SML.zip': (2011, 2015),
+                  '2016-2020_SML.zip': (2016, 2020),
+              }),
+              'regex_id': r'2023/[0-9]{4}-[0-9]{4}_SML',
               'num_regions': 77,
               'num_sectors': 45},
+        '2025-extended':
+             {'links': _chunk_links('https://webfs-sti.oecd.org/files/STI-PIE/ICIO/2025/', {
+                  '1995-2000_EXT.zip': (1995, 2000),
+                  '2001-2005_EXT.zip': (2001, 2005),
+                  '2006-2010_EXT.zip': (2006, 2010),
+                  '2011-2015_EXT.zip': (2011, 2015),
+                  '2016-2022_EXT.zip': (2016, 2022),
+              }),
+              'regex_id': r'2025/[0-9]{4}-[0-9]{4}_EXT',
+              'num_regions': 85,
+              'num_sectors': 50},
+         '2025-regular':
+             {'links': _chunk_links('https://webfs-sti.oecd.org/files/STI-PIE/ICIO/2025/', {
+                  '1995-2000_SML.zip': (1995, 2000),
+                  '2001-2005_SML.zip': (2001, 2005),
+                  '2006-2010_SML.zip': (2006, 2010),
+                  '2011-2015_SML.zip': (2011, 2015),
+                  '2016-2022_SML.zip': (2016, 2022),
+              }),
+              'regex_id': r'2025/[0-9]{4}-[0-9]{4}_SML',
+              'num_regions': 81,
+              'num_sectors': 50}
 
          },
+
     'figaro':
         {'2022':
             {'links':

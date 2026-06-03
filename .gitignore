@@ -9,4 +9,4 @@
 .pip/
 **/__pycache__/
 **/.temp_data/
-
+test.py

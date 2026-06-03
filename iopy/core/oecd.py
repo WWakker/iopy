@@ -15,7 +15,7 @@ import re
 import os
 from iopy.core.config import config
 from iopy.core.base_io import IO
-from iopy.core.utils import replace_if_exists, remove_downloaded_files
+from iopy.core.utils import replace_if_exists, remove_downloaded_files, download_file
 from iopy.core.globals import DATA_FOLDER, FILES_LOG
 from warnings import warn
 from functools import partial
@@ -65,7 +65,7 @@ class OECD(IO):
         self.year = year
         self.version = version
         self._url = config['oecd'][version]['links'][year]
-        self._file_id = re.search(config['oecd'][version]['regex_id'], self._url).group(0)
+        self._file_id = re.search(config['oecd'][version]['regex_id'], self._url).group(0).replace('/', '_')
         self._data_file = os.path.join(DATA_FOLDER, self._file_id + '.zip')
         file_exists = os.path.exists(self._data_file)
         download = not file_exists or refresh
@@ -143,22 +143,21 @@ class OECD(IO):
         if self.version == '2021':
             filename = f'ICIO2021_{self.year}.csv'
         elif self.version == '2022-extended':
-            filename = f'{self.year}.CSV'
+            filename = f'{self.year}.csv'
         elif self.version == '2022-small':
-            filename = f'{self.year}SML.CSV'
+            filename = f'{self.year}_SML.csv'
+        elif self.version == '2025-extended':
+            filename = f'{self.year}.csv'
+        elif self.version == '2025-regular':
+            filename = f'{self.year}_SML.csv'
         with ZipFile(self._data_file, 'r') as zf:
             with zf.open(filename, 'r') as csv_file:
                 df = pd.read_csv(csv_file, index_col=0)
         return df
 
     def _download_data(self):
-        import requests
-
         try:
-            r = requests.get(self._url, stream=True)
-            with open(self._data_file, "wb") as f:
-                for chunk in r.iter_content(1024 * 5):
-                    f.write(chunk)
+            download_file(self._url, self._data_file)
             with open(FILES_LOG, 'a') as files_log:
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:

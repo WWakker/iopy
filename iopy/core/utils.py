@@ -13,6 +13,25 @@ def assert_is_subset(subset, superset):
         raise ValueError(f'Not found: {set(subset).difference(superset)}')
 
 
+def download_file(url, dest):
+    """Stream-download ``url`` to the local path ``dest``.
+
+    Uses ``curl_cffi`` with browser (TLS) impersonation so downloads succeed even
+    when the host sits behind Cloudflare's bot challenge. The OECD file server
+    (``webfs-sti.oecd.org``) rejects plain ``requests``/``urllib`` traffic with
+    HTTP 403; impersonating a real browser passes the challenge and is harmless
+    for the non-protected Eurostat/EXIOBASE hosts.
+    """
+    from curl_cffi import requests
+
+    r = requests.get(url, stream=True, impersonate='chrome')
+    if not r.ok:
+        raise ConnectionError(r.reason or f'HTTP {r.status_code}')
+    with open(dest, 'wb') as f:
+        for chunk in r.iter_content():
+            f.write(chunk)
+
+
 def replace_if_exists(x, mapping):
     """Replace if x exists in mapping, otherwise return x
 
