@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iotables"
+version = "0.0.1"
+description = "A Python package to easily load and work with inter-country input-output data"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Wouter Wakker", email = "wouter.wakker@outlook.com" }]
+requires-python = ">=3.8"
+dependencies = [
+    "curl_cffi",
+    "numpy",
+    "pandas>=1.1.5",
+    "matplotlib",
+    "tqdm",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["iotables"]
+omit = ["**/adjust_source_in_covxml.py", "**/update_badge.py"]

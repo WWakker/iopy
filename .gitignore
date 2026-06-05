@@ -10,3 +10,9 @@
 **/__pycache__/
 **/.temp_data/
 test.py
+
+# packaging build artifacts
+build/
+dist/
+*.egg-info/
+src/*.egg-info/

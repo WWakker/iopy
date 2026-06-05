@@ -3,21 +3,21 @@
 **Authors**: W. Wakker
 
 """
-from iopy.core.mappings import oecd_sector_name_mapping, oecd_sector_name_mapping_2025, oecd_demand_items, \
+from iotables.mappings import oecd_sector_name_mapping, oecd_sector_name_mapping_2025, oecd_demand_items, \
     oecd_sector_2022_2021_mapping
-from iopy.core.matrix import Matrix
+from iotables.matrix import Matrix
 from functools import lru_cache
 import numpy as np
 import pandas as pd
-from iopy.core.utils import ALPHA3_TO_ALPHA2
+from iotables.utils import ALPHA3_TO_ALPHA2
 from tqdm import tqdm
 from zipfile import ZipFile
 import re
 import os
-from iopy.core.config import config
-from iopy.core.base_io import IO
-from iopy.core.utils import replace_if_exists, remove_downloaded_files, download_file
-from iopy.core.globals import DATA_FOLDER, FILES_LOG
+from iotables.config import config
+from iotables.base_io import IO
+from iotables.utils import replace_if_exists, remove_downloaded_files, download_file
+from iotables.globals import DATA_FOLDER, FILES_LOG
 from warnings import warn
 from functools import partial
 

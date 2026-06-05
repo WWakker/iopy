@@ -4,7 +4,7 @@
 
 """
 import pytest
-from iopy import OECD
+from iotables import OECD
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt

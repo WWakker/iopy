@@ -3,7 +3,7 @@
 **Authors**: W. Wakker
 
 """
-from iopy.core.globals import FILES_LOG
+from iotables.globals import FILES_LOG
 from collections import defaultdict
 import os
 

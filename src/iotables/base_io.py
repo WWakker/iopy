@@ -4,8 +4,8 @@
 
 """
 from warnings import warn
-from iopy.core.matrix import Matrix
-from iopy.core.utils import assert_is_subset
+from iotables.matrix import Matrix
+from iotables.utils import assert_is_subset
 import matplotlib.pyplot as plt
 from typing import Union, Iterable, Optional
 import numpy as np

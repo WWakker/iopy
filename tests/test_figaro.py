@@ -4,7 +4,7 @@
 
 """
 import pytest
-from iopy import Figaro
+from iotables import Figaro
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt

@@ -3,11 +3,11 @@
 **Authors**: W. Wakker
 
 """
-from iopy.core.matrix import Matrix
+from iotables.matrix import Matrix
 import pandas as pd
 import numpy as np
 import pytest
-from iopy.core.utils import ALPHA3_TO_ALPHA2
+from iotables.utils import ALPHA3_TO_ALPHA2
 
 
 def process_df(df):

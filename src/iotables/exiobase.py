@@ -3,7 +3,7 @@
 **Authors**: S. Boldrini
 """
 
-from iopy.core.matrix import Matrix
+from iotables.matrix import Matrix
 from functools import lru_cache
 import numpy as np
 import pandas as pd
@@ -11,11 +11,11 @@ from tqdm import tqdm
 from zipfile import ZipFile
 import re
 import os
-from iopy.core.config import config
-from iopy.core.base_io import IO
+from iotables.config import config
+from iotables.base_io import IO
 from warnings import warn
-from iopy.core.globals import DATA_FOLDER, FILES_LOG
-from iopy.core.utils import remove_downloaded_files, download_file
+from iotables.globals import DATA_FOLDER, FILES_LOG
+from iotables.utils import remove_downloaded_files, download_file
 
 db_name = os.path.basename(__file__).rstrip('.py')
 

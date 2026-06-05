@@ -1,11 +1,17 @@
 import os
-from iopy.core.globals import DATA_FOLDER as __DATA_FOLDER
-from iopy.core.globals import IS_WINDOWS as __IS_WINDOWS
-from iopy.core.globals import FILES_LOG as __FILES_LOG
-from iopy.core.oecd import OECD
-from iopy.core.figaro import Figaro
-from iopy.core.exiobase import ExioBase
-from iopy.core.utils import remove_downloaded_files
+from importlib.metadata import version as _version, PackageNotFoundError as _PackageNotFoundError
+from iotables.globals import DATA_FOLDER as __DATA_FOLDER
+from iotables.globals import IS_WINDOWS as __IS_WINDOWS
+from iotables.globals import FILES_LOG as __FILES_LOG
+from iotables.oecd import OECD
+from iotables.figaro import Figaro
+from iotables.exiobase import ExioBase
+from iotables.utils import remove_downloaded_files
+
+try:
+    __version__ = _version("iotables")
+except _PackageNotFoundError:  # package not installed (e.g. running from source tree)
+    __version__ = "0.0.0"
 
 
 def get_size_data_folder():
@@ -34,7 +40,6 @@ def get_size_data_folder():
     return get_size(__DATA_FOLDER)
 
 
-if not os.path.exists(__DATA_FOLDER):
-    os.mkdir(__DATA_FOLDER)
+os.makedirs(__DATA_FOLDER, exist_ok=True)
 
 del os

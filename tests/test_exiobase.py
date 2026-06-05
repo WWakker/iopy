@@ -3,7 +3,7 @@
 **Authors**: W. Wakker
 
 """
-from iopy import ExioBase
+from iotables import ExioBase
 
 
 class TestExioBase:

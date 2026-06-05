@@ -3,19 +3,19 @@
 **Authors**: W. Wakker
 
 """
-from iopy.core.mappings import figaro_sector_name_mapping_pxp_2022, figaro_sector_name_mapping_ixi_2022, figaro_demand_items
-from iopy.core.matrix import Matrix
+from iotables.mappings import figaro_sector_name_mapping_pxp_2022, figaro_sector_name_mapping_ixi_2022, figaro_demand_items
+from iotables.matrix import Matrix
 from functools import lru_cache
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import re
 import os
-from iopy.core.config import config
+from iotables.config import config
 from warnings import warn
-from iopy.core.base_io import IO
-from iopy.core.globals import DATA_FOLDER, FILES_LOG
-from iopy.core.utils import remove_downloaded_files, download_file
+from iotables.base_io import IO
+from iotables.globals import DATA_FOLDER, FILES_LOG
+from iotables.utils import remove_downloaded_files, download_file
 
 db_name = os.path.basename(__file__).rstrip('.py')
 
