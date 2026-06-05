@@ -13,7 +13,7 @@ def assert_is_subset(subset, superset):
         raise ValueError(f'Not found: {set(subset).difference(superset)}')
 
 
-def download_file(url, dest):
+def download_file(url, dest, proxy=None, verify=True):
     """Stream-download ``url`` to the local path ``dest``.
 
     Uses ``curl_cffi`` with browser (TLS) impersonation so downloads succeed even
@@ -21,10 +21,24 @@ def download_file(url, dest):
     (``webfs-sti.oecd.org``) rejects plain ``requests``/``urllib`` traffic with
     HTTP 403; impersonating a real browser passes the challenge and is harmless
     for the non-protected Eurostat/EXIOBASE hosts.
+
+    Args:
+        url: Source URL.
+        dest: Local file path to write to.
+        proxy: Optional proxy. Either a single URL string (e.g.
+               ``'http://user:pass@host:port'``) applied to both http and https,
+               or a ``{scheme: url}`` dict passed straight through.
+        verify: Verify the server's TLS certificate. Set to ``False`` to skip
+                verification (e.g. behind a TLS-intercepting proxy), or pass a
+                path to a CA bundle.
     """
     from curl_cffi import requests
 
-    r = requests.get(url, stream=True, impersonate='chrome')
+    kwargs = {}
+    if proxy is not None:
+        kwargs['proxies'] = {'http': proxy, 'https': proxy} if isinstance(proxy, str) else proxy
+
+    r = requests.get(url, stream=True, impersonate='chrome', verify=verify, **kwargs)
     if not r.ok:
         raise ConnectionError(r.reason or f'HTTP {r.status_code}')
     with open(dest, 'wb') as f:

@@ -45,13 +45,18 @@ class OECD(IO):
     def __init__(self,
                  version: str,
                  year: int,
-                 refresh: bool = False):
+                 refresh: bool = False,
+                 proxy=None,
+                 verify=True):
         """
 
         Args:
             version: Publication version of the data; '2021', '2022-small' or '2022-extended'
             year: Year
             refresh: Download the data even if it exists on the hard drive
+            proxy: Optional proxy for downloading; a URL string (applied to http and
+                   https) or a ``{scheme: url}`` dict
+            verify: Verify the server's TLS certificate (``False`` to skip, or a CA bundle path)
         """
 
         if version not in config['oecd'].keys():
@@ -65,6 +70,8 @@ class OECD(IO):
 
         self.year = year
         self.version = version
+        self._proxy = proxy
+        self._verify = verify
         self._url = config['oecd'][version]['links'][year]
         self._file_id = re.search(config['oecd'][version]['regex_id'], self._url).group(0).replace('/', '_')
         self._data_file = os.path.join(DATA_FOLDER, self._file_id + '.zip')
@@ -159,7 +166,7 @@ class OECD(IO):
 
     def _download_data(self):
         try:
-            download_file(self._url, self._data_file)
+            download_file(self._url, self._data_file, proxy=self._proxy, verify=self._verify)
             with open(FILES_LOG, 'a') as files_log:
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:

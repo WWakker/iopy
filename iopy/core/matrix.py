@@ -4,6 +4,7 @@
 
 """
 import numpy as np
+import pandas as pd
 
 
 class Matrix(np.ndarray):
@@ -68,3 +69,18 @@ class Matrix(np.ndarray):
             numpy array
         """
         return np.asarray(self)
+
+    def to_pandas(self):
+        """Convert to pandas DataFrame
+
+        Returns:
+            pandas DataFrame
+        """
+        def _to_index(labels):
+            if len(labels) and isinstance(labels[0], tuple):
+                return pd.MultiIndex.from_tuples(labels, names=['region', 'sector'])
+            return pd.Index(labels)
+
+        return pd.DataFrame(np.asarray(self),
+                            index=_to_index(self.rows),
+                            columns=_to_index(self.columns))

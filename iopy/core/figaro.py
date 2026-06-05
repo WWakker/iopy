@@ -42,7 +42,9 @@ class Figaro(IO):
                  version: str,
                  year: int,
                  kind='industry-by-industry',
-                 refresh: bool = False):
+                 refresh: bool = False,
+                 proxy=None,
+                 verify=True):
         """
 
         Args:
@@ -50,6 +52,9 @@ class Figaro(IO):
             year: Year; availability depends on the edition (e.g. 2010-2023 for '2025')
             kind: industry-by-industry (default) or product-by-product
             refresh: Download the data even if it exists on the hard drive
+            proxy: Optional proxy for downloading; a URL string (applied to http and
+                   https) or a ``{scheme: url}`` dict
+            verify: Verify the server's TLS certificate (``False`` to skip, or a CA bundle path)
         """
         assert kind in {'industry-by-industry', 'product-by-product'}
 
@@ -65,6 +70,8 @@ class Figaro(IO):
         self.version = version
         self.year = year
         self.kind = kind
+        self._proxy = proxy
+        self._verify = verify
         self._url = config['figaro'][version]['links'][kind][year]
         self._file_id = re.search(config['figaro'][version]['regex_id'], self._url).group(0)
         self._data_file = os.path.join(DATA_FOLDER, self._file_id + '.csv')
@@ -140,7 +147,7 @@ class Figaro(IO):
 
     def _download_data(self):
         try:
-            download_file(self._url, self._data_file)
+            download_file(self._url, self._data_file, proxy=self._proxy, verify=self._verify)
             with open(FILES_LOG, 'a') as files_log:
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:
