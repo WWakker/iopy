@@ -10,7 +10,7 @@ parent = os.path.dirname(__file__)
 with open(f'{parent}/cov.xml', 'r+') as f:
     covxml = f.read()
     covxml = re.sub(r'<source>.*</source>',
-                    r'<source>/builds/.../.../iopy/iopy</source>',
+                    r'<source>/builds/.../.../src/iotables</source>',
                     covxml)
     f.seek(0)
     f.write(covxml)

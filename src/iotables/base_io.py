@@ -1,11 +1,7 @@
-"""  Created on 18/10/2022::
-------------- io -------------
-**Authors**: W. Wakker
-
-"""
+"""Shared analysis engine: derives the coefficient/inverse matrices and runs shocks."""
 from warnings import warn
-from iopy.core.matrix import Matrix
-from iopy.core.utils import assert_is_subset
+from iotables.matrix import Matrix
+from iotables.utils import assert_is_subset
 import matplotlib.pyplot as plt
 from typing import Union, Iterable, Optional
 import numpy as np
@@ -22,6 +18,7 @@ class IO:
                            'X',
                            'V',
                            'FD',
+                           'FD_GRAN',
                            'ADD',
                            'FD_REGION',
                            'rs',
@@ -29,7 +26,9 @@ class IO:
                            'regions',
                            'sectors',
                            'unit',
-                           'demand_items']
+                           'demand_items',
+                           'reference',
+                           'contact']
         assert_is_subset(necessary_attrs, dir(self))
 
         # Coefficients matrix, replace 0 with 1 to allow inversion
@@ -53,7 +52,7 @@ class IO:
                         self.Z.rows,
                         self.Z.columns)
 
-        self.G = Matrix('Output inverse',
+        self.G = Matrix('Ghosh inverse',
                         (np.eye(self.rs) - self.B).I,
                         self.Z.rows,
                         self.Z.columns)
@@ -80,7 +79,8 @@ class IO:
         if custom_shock_vector is not None:
             shock_vector = np.array(custom_shock_vector).reshape(self.rs, 1)
         else:
-            assert shock and regions and sectors, "Must supply parameters: 'shock', 'regions', 'sectors'"
+            if shock is None or regions is None or sectors is None:
+                raise ValueError("Must supply parameters: 'shock', 'regions', 'sectors'")
 
             assert_is_subset(regions, self.regions)
             assert_is_subset(sectors, self.sectors)
@@ -171,7 +171,8 @@ class IO:
         Returns:
             fig, ax
         """
-        assert by in {'region', 'sector'}, "plot_by must be 'region' or 'sector'"
+        if by not in {'region', 'sector'}:
+            raise ValueError("plot_by must be 'region' or 'sector'")
         assert_is_subset(regions, self.regions)
 
         df = self._shock_to_df(x_new)
@@ -255,7 +256,7 @@ class IO:
         """Executes a Ghosh supply shock
 
         Args:
-            shock: Shock in percentage of original demand
+            shock: Shock in percentage of original primary inputs (value added)
             regions: List of regions to be shocked
             sectors: List of sectors to be shocked
             custom_shock_vector: Vector of length regions * sectors with percentage shocks, overrides all other shock
@@ -297,7 +298,8 @@ class IO:
         Returns:
             float: Sum of trade flow from exporting region-sectors to importing region-sectors
         """
-        assert use_type in {'intermediate', 'final', 'both'}, "use_type must be 'intermediate', 'final' or 'both'"
+        if use_type not in {'intermediate', 'final', 'both'}:
+            raise ValueError("use_type must be 'intermediate', 'final' or 'both'")
 
         if import_sectors is not None and use_type in {'final', 'both'}:
             warn('Note that import_sectors only apply to intermediate use, for final use only import_regions is used')

@@ -1,27 +1,23 @@
-"""  Created on 03/10/2022::
-------------- test_matrix -------------
-**Authors**: W. Wakker
-
-"""
-from iopy.core.matrix import Matrix
+"""Offline tests for the labelled Matrix subclass."""
+from iotables.matrix import Matrix
 import pandas as pd
 import numpy as np
 import pytest
-from iopy.core.utils import ALPHA3_TO_ALPHA2
+from iotables.utils import ALPHA3_TO_ALPHA2
 
 
 def process_df(df):
     if df.shape[0] > 1 and df.shape[1] > 1:
         return (df,
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_')],
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_')])
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_', n=1)],
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_', n=1)])
     elif df.shape[0] == 1:
         return (df,
                 df.index.to_list(),
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_')])
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.columns.str.split('_', n=1)])
     else:
         return (df,
-                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_')],
+                [(ALPHA3_TO_ALPHA2[r] if r in ALPHA3_TO_ALPHA2 else r, s) for r, s in df.index.str.split('_', n=1)],
                 df.columns.to_list())
 
 
@@ -39,7 +35,7 @@ class TestMatrix:
             Matrix('something', *process_df(df))
 
     def test2(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             Matrix('something', [1, 2, 3], ['something'], ['something'])
 
     def testI(self):

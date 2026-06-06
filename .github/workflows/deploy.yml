@@ -1,0 +1,33 @@
+name: deploy
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    environment: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      # Required for PyPI Trusted Publishing (OIDC); no API token/secret needed.
+      id-token: write
+      contents: read
+    steps:
+      - run: echo "Starting deployment to PyPi"
+      - uses: actions/checkout@v5
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+      - name: Install helpers
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+      - name: Build
+        # This project uses a pyproject.toml build backend (no setup.py), so build
+        # with the PEP 517 frontend rather than `setup.py sdist bdist_wheel`.
+        run: python -m build
+      - name: Check distribution metadata
+        run: twine check dist/*
+      - name: Deploy to PyPi
+        # Trusted Publishing: PyPI verifies this repo/workflow/environment via OIDC.
+        uses: pypa/gh-action-pypi-publish@release/v1
+      - run: echo "Successfully deployed to PyPi"

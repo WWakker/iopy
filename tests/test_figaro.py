@@ -1,50 +1,53 @@
-"""  Created on 19/10/2022::
-------------- test_figaro -------------
-**Authors**: W. Wakker
-
-"""
+"""Network tests for the Figaro loader (download real data; run with the 'network' marker)."""
 import pytest
-from iopy import Figaro
+from iotables import Figaro
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-f = Figaro(version='2022', year=2018, kind='industry-by-industry')
-
-custom_shock_vector = np.random.uniform(size=f.rs, low=-10, high=10).reshape(-1, 1)
-
 EA = ['AT', 'BE', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK']
 
 
+@pytest.fixture(scope="module")
+def f():
+    return Figaro(version='2025', year=2018, kind='industry-by-industry')
+
+
+@pytest.fixture(scope="module")
+def custom_shock_vector(f):
+    return np.random.uniform(size=f.rs, low=-10, high=10).reshape(-1, 1)
+
+
+@pytest.mark.network
 class TestFigaro:
 
     def test_download(self):
-        Figaro(version='2022', year=2018, refresh=True)
+        Figaro(version='2025', year=2018, refresh=True)
 
     def test_load(self):
-        fi = Figaro(version='2022', year=2018, kind='industry-by-industry')
+        fi = Figaro(version='2025', year=2018, kind='industry-by-industry')
         assert set(fi.sectors).issubset(fi.sector_name_mapping)
-        fi = Figaro(version='2022', year=2018, kind='product-by-product')
+        fi = Figaro(version='2025', year=2018, kind='product-by-product')
         assert set(fi.sectors).issubset(fi.sector_name_mapping)
 
-    def test_matrices(self):
+    def test_matrices(self, f):
         for attr in ['Z', 'A', 'B', 'L', 'G', 'V', 'FD', 'X']:
             assert hasattr(f, attr)
             for attr_attr in ['info', 'rows', 'columns', 'I']:
                 assert attr_attr in dir(getattr(f, attr))
 
-    def test_leontief(self):
+    def test_leontief(self, f):
         fd = (np.eye(f.rs) - f.A) @ f.X
         assert np.isclose(f.FD, fd, atol=.001).all()
 
         x = (np.eye(f.rs) - f.A).I @ f.FD
         assert np.isclose(f.X, x, atol=.001).all()
 
-    def test_ghosh(self):
+    def test_ghosh(self, f):
         x = f.G.T @ f.V.T
         assert np.isclose(f.X, x, atol=.001).all()
 
-    def test_shock(self):
+    def test_shock(self, f, custom_shock_vector):
         assert np.array_equal(f._shock(model='ghosh', custom_shock_vector=custom_shock_vector),
                               (f.G.T @ (f.V.T * (custom_shock_vector / 100))) + f.X)
 
@@ -52,7 +55,7 @@ class TestFigaro:
                               ((np.eye(f.rs) - f.A).I @ (
                                       f.FD * (custom_shock_vector / 100))) + f.X)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             f._shock(model='leontief')
 
         shock_vector = np.array([-.1 if r in EA and s == 'A01' else 0 for r, s in f.X.rows]).reshape(-1, 1)
@@ -72,17 +75,17 @@ class TestFigaro:
         with pytest.raises(ValueError):
             f._shock(model='leontief', shock=-10, regions=EA + ['something'], sectors=['A01'])
 
-    def test_leontief_shock(self):
+    def test_leontief_shock(self, f):
         assert np.array_equal(
             f.leontief_demand_shock(shock=-10, regions=EA, sectors=['A01']).x_new.values.reshape(-1, 1),
             f._shock(model='leontief', shock=-10, regions=EA, sectors=['A01']))
 
-    def test_ghosh_shock(self):
+    def test_ghosh_shock(self, f):
         assert np.array_equal(
             f.ghosh_supply_shock(shock=-10, regions=EA, sectors=['A01']).x_new.values.reshape(-1, 1),
             f._shock(model='ghosh', shock=-10, regions=EA, sectors=['A01']))
 
-    def test_plot(self):
+    def test_plot(self, f):
         fig, ax = f.ghosh_supply_shock(shock=-10, regions=EA, sectors=['A01'], plot_regions=EA, plot=True, show=False)
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, plt.Axes)
@@ -101,25 +104,25 @@ class TestFigaro:
             f.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'],
                                  plot=True, show=True, plot_by='region')
 
-    def test_get_imports_exports(self):
+    def test_get_imports_exports(self, f):
 
         assert np.isclose(f.get_imports_exports(import_regions=['CN'],
                                                 export_regions='AU',
                                                 import_sectors=None,
                                                 export_sectors=None,
-                                                use_type='intermediate'), 86280.8749)
+                                                use_type='intermediate'), 72202.248)
 
         assert np.isclose(f.get_imports_exports(import_regions='CN',
                                                 export_regions='AU',
                                                 import_sectors=None,
                                                 export_sectors=None,
-                                                use_type='final'), 13770.405)
+                                                use_type='final'), 8212.555)
 
         assert np.isclose(f.get_imports_exports(import_regions=['CN'],
                                                 export_regions='AU',
                                                 import_sectors=None,
                                                 export_sectors=None,
-                                                use_type='both'), 86280.8749 + 13770.405)
+                                                use_type='both'), 72202.248 + 8212.555)
 
         f.get_imports_exports(import_regions=['CN'],
                               export_regions='AU',
@@ -142,5 +145,5 @@ class TestFigaro:
                               import_sectors='A01',
                               use_type='both')
 
-    def test_remove_local_files(self):
+    def test_remove_local_files(self, f):
         f.remove_downloaded_files()

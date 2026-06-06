@@ -1,25 +1,28 @@
-"""  Created on 03/10/2022::
-------------- test -------------
-**Authors**: W. Wakker
-
-"""
+"""Network tests for the OECD loader (download real data; run with the 'network' marker)."""
 import pytest
-from iopy import OECD
+from iotables import OECD
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-oecd = OECD(version='2021', year=2018)
-
-custom_shock_vector = np.random.uniform(size=oecd.rs, low=-10, high=10).reshape(-1, 1)
-
 EA = ['AT', 'BE', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK']
 
 
+@pytest.fixture(scope="module")
+def oecd():
+    return OECD(version='2021', year=2018)
+
+
+@pytest.fixture(scope="module")
+def custom_shock_vector(oecd):
+    return np.random.uniform(size=oecd.rs, low=-10, high=10).reshape(-1, 1)
+
+
+@pytest.mark.network
 class TestOECD:
 
     def test_download(self):
-        o = OECD(version='2021', year=2018, refresh=True)
+        OECD(version='2021', year=2018, refresh=True)
 
     def test_load(self):
         o = OECD(version='2021', year=2018)
@@ -28,25 +31,29 @@ class TestOECD:
         assert set(o.sectors).issubset(o.sector_name_mapping)
         o = OECD(version='2022-small', year=2018)
         assert set(o.sectors).issubset(o.sector_name_mapping)
+        o = OECD(version='2025-extended', year=2022)
+        assert set(o.sectors).issubset(o.sector_name_mapping)
+        o = OECD(version='2025-regular', year=2022)
+        assert set(o.sectors).issubset(o.sector_name_mapping)
 
-    def test_matrices(self):
+    def test_matrices(self, oecd):
         for attr in ['Z', 'A', 'B', 'L', 'G', 'V', 'FD', 'X']:
             assert hasattr(oecd, attr)
             for attr_attr in ['info', 'rows', 'columns', 'I']:
                 assert attr_attr in dir(getattr(oecd, attr))
 
-    def test_leontief(self):
+    def test_leontief(self, oecd):
         fd = (np.eye(oecd.rs) - oecd.A) @ oecd.X
         assert np.isclose(oecd.FD, fd, atol=.001).all()
 
         x = (np.eye(oecd.rs) - oecd.A).I @ oecd.FD
         assert np.isclose(oecd.X, x, atol=.001).all()
 
-    def test_ghosh(self):
+    def test_ghosh(self, oecd):
         x = oecd.G.T @ oecd.V.T
         assert np.isclose(oecd.X, x, atol=.001).all()
 
-    def test_shock(self):
+    def test_shock(self, oecd, custom_shock_vector):
         assert np.array_equal(oecd._shock(model='ghosh', custom_shock_vector=custom_shock_vector),
                               (oecd.G.T @ (oecd.V.T * (custom_shock_vector / 100))) + oecd.X)
 
@@ -54,7 +61,7 @@ class TestOECD:
                               ((np.eye(oecd.rs) - oecd.A).I @ (
                                       oecd.FD * (custom_shock_vector / 100))) + oecd.X)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             oecd._shock(model='leontief')
 
         shock_vector = np.array([-.1 if r in EA and s == '35' else 0 for r, s in oecd.X.rows]).reshape(-1, 1)
@@ -74,17 +81,17 @@ class TestOECD:
         with pytest.raises(ValueError):
             oecd._shock(model='leontief', shock=-10, regions=EA + ['something'], sectors=['35'])
 
-    def test_leontief_shock(self):
+    def test_leontief_shock(self, oecd):
         assert np.array_equal(
             oecd.leontief_demand_shock(shock=-10, regions=EA, sectors=['35']).x_new.values.reshape(-1, 1),
             oecd._shock(model='leontief', shock=-10, regions=EA, sectors=['35']))
 
-    def test_ghosh_shock(self):
+    def test_ghosh_shock(self, oecd):
         assert np.array_equal(
             oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35']).x_new.values.reshape(-1, 1),
             oecd._shock(model='ghosh', shock=-10, regions=EA, sectors=['35']))
 
-    def test_plot(self):
+    def test_plot(self, oecd):
         fig, ax = oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'], plot_regions=EA, plot=True, show=False)
         assert isinstance(fig, matplotlib.figure.Figure)
         assert isinstance(ax, plt.Axes)
@@ -103,7 +110,7 @@ class TestOECD:
             oecd.ghosh_supply_shock(shock=-10, regions=EA, sectors=['35'],
                                     plot=True, show=True, plot_by='region')
 
-    def test_get_imports_exports(self):
+    def test_get_imports_exports(self, oecd):
 
         assert np.isclose(oecd.get_imports_exports(import_regions=['CN1', 'CN2'],
                                                    export_regions='AU',

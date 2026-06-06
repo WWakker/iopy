@@ -1,23 +1,18 @@
-"""  Created on 14/10/2022::
-------------- figaro -------------
-**Authors**: W. Wakker
-
-"""
-from iopy.core.mappings import figaro_sector_name_mapping_pxp_2022, figaro_sector_name_mapping_ixi_2022, figaro_demand_items
-from iopy.core.matrix import Matrix
-from functools import lru_cache
+"""Loader for Eurostat Figaro inter-country input-output data."""
+from iotables.mappings import figaro_sector_name_mapping_pxp_2022, figaro_sector_name_mapping_ixi_2022, figaro_demand_items
+from iotables.matrix import Matrix
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import re
 import os
-from iopy.core.config import config
+from iotables.config import config
 from warnings import warn
-from iopy.core.base_io import IO
-from iopy.core.globals import DATA_FOLDER, FILES_LOG
-from iopy.core.utils import remove_downloaded_files
+from iotables.base_io import IO
+from iotables.globals import DATA_FOLDER, FILES_LOG
+from iotables.utils import remove_downloaded_files, download_file
 
-db_name = os.path.basename(__file__).rstrip('.py')
+db_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 def process_df(df):
@@ -42,16 +37,22 @@ class Figaro(IO):
                  version: str,
                  year: int,
                  kind='industry-by-industry',
-                 refresh: bool = False):
+                 refresh: bool = False,
+                 proxy=None,
+                 verify=True):
         """
 
         Args:
-            version: Edition (year of publication), e.g. '2022'
-            year: Year from 2010 to 2020
+            version: Edition (year of publication), e.g. '2025'
+            year: Year; availability depends on the edition (e.g. 2010-2023 for '2025')
             kind: industry-by-industry (default) or product-by-product
             refresh: Download the data even if it exists on the hard drive
+            proxy: Optional proxy for downloading; a URL string (applied to http and
+                   https) or a ``{scheme: url}`` dict
+            verify: Verify the server's TLS certificate (``False`` to skip, or a CA bundle path)
         """
-        assert kind in {'industry-by-industry', 'product-by-product'}
+        if kind not in {'industry-by-industry', 'product-by-product'}:
+            raise ValueError("kind must be 'industry-by-industry' or 'product-by-product'")
 
         if version not in config['figaro'].keys():
             raise ValueError(
@@ -65,6 +66,8 @@ class Figaro(IO):
         self.version = version
         self.year = year
         self.kind = kind
+        self._proxy = proxy
+        self._verify = verify
         self._url = config['figaro'][version]['links'][kind][year]
         self._file_id = re.search(config['figaro'][version]['regex_id'], self._url).group(0)
         self._data_file = os.path.join(DATA_FOLDER, self._file_id + '.csv')
@@ -114,7 +117,7 @@ class Figaro(IO):
             # Create region level FD
             fd_region = pd.DataFrame(self.FD_GRAN, columns=[r for r, s in self.FD_GRAN.columns]).T
             fd_region.index.name = 'region'
-            fd_region = fd_region.groupby('region').sum(0).T
+            fd_region = fd_region.groupby('region').sum().T
             self.FD_REGION = Matrix('Final demand by region',
                                     fd_region,
                                     rows=self.Z.rows,
@@ -133,19 +136,13 @@ class Figaro(IO):
             pbar.update()
             pbar.set_description('Done')
 
-    @lru_cache()
     def _load_data(self):
         df = pd.read_csv(self._data_file, index_col=0)
         return df
 
     def _download_data(self):
-        import requests
-
         try:
-            r = requests.get(self._url, stream=True)
-            with open(self._data_file, "wb") as f:
-                for chunk in r.iter_content(1024 * 5):
-                    f.write(chunk)
+            download_file(self._url, self._data_file, proxy=self._proxy, verify=self._verify)
             with open(FILES_LOG, 'a') as files_log:
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:

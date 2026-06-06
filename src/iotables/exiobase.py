@@ -1,23 +1,19 @@
-"""  Created on 15/11/2022::
-------------- exiobase -------------
-**Authors**: S. Boldrini
-"""
+"""Loader for EXIOBASE inter-country input-output data."""
 
-from iopy.core.matrix import Matrix
-from functools import lru_cache
+from iotables.matrix import Matrix
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from zipfile import ZipFile
 import re
 import os
-from iopy.core.config import config
-from iopy.core.base_io import IO
+from iotables.config import config
+from iotables.base_io import IO
 from warnings import warn
-from iopy.core.globals import DATA_FOLDER, FILES_LOG
-from iopy.core.utils import remove_downloaded_files
+from iotables.globals import DATA_FOLDER, FILES_LOG
+from iotables.utils import remove_downloaded_files, download_file
 
-db_name = os.path.basename(__file__).rstrip('.py')
+db_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 def process_df(df):
@@ -33,7 +29,9 @@ class ExioBase(IO):
                  version: str,
                  year: int,
                  kind: str = 'industry-by-industry',
-                 refresh: bool = False):
+                 refresh: bool = False,
+                 proxy=None,
+                 verify=True):
         """
 
         Args:
@@ -41,9 +39,13 @@ class ExioBase(IO):
             year: Year from 1995 to 2022
             kind: industry-by-industry (default) or product-by-product
             refresh: Download the data even if it exists on the hard drive
+            proxy: Optional proxy for downloading; a URL string (applied to http and
+                   https) or a ``{scheme: url}`` dict
+            verify: Verify the server's TLS certificate (``False`` to skip, or a CA bundle path)
         """
 
-        assert kind in {'industry-by-industry', 'product-by-product'}
+        if kind not in {'industry-by-industry', 'product-by-product'}:
+            raise ValueError("kind must be 'industry-by-industry' or 'product-by-product'")
 
         if version not in config['exiobase'].keys():
             raise ValueError(
@@ -57,6 +59,8 @@ class ExioBase(IO):
         self.version = version
         self.year = year
         self.kind = kind
+        self._proxy = proxy
+        self._verify = verify
         self._url = config['exiobase'][version]['links'][kind][year]
         self._file_id = re.search(config['exiobase'][version]['regex_id'], self._url).group(0)
         self._data_file = os.path.join(DATA_FOLDER, self._file_id + '.zip')
@@ -72,7 +76,7 @@ class ExioBase(IO):
             # Load
             pbar.set_description('Loading data...')
             self.df = None
-            self._Z_raw, self._FD_raw, self._X_raw, self._metadata, self._sector_codes, self._FD_codes = self._load_data()
+            self._Z_raw, self._FD_raw, self._X_raw, self._sector_codes, self._FD_codes = self._load_data()
 
             exiobase_sector_name_mapping = self._sector_codes.reset_index().set_index('CodeNr')['Name'].to_dict()
             exiobase_FD_name_mapping = self._FD_codes.reset_index().set_index('CodeNr')['Name'].to_dict()
@@ -93,7 +97,8 @@ class ExioBase(IO):
 
             # Create matrices
             pbar.set_description('Creating matrices...')
-            assert self._Z_raw.shape[0] == self._Z_raw.shape[1]
+            if self._Z_raw.shape[0] != self._Z_raw.shape[1]:
+                raise ValueError('Intermediate-use matrix Z is not square; the downloaded file may be corrupt')
             self.rs = config['exiobase'][version]['num_regions'][kind] * config['exiobase'][version]['num_sectors'][kind]
             self.Z = Matrix('Intermediate use',
                             *process_df(self._Z_raw))
@@ -119,10 +124,11 @@ class ExioBase(IO):
                                      columns=[r for r, s in self.FD_GRAN.columns]).T
             fd_region.index.name = 'region'
 
+            fd_region = fd_region.groupby('region').sum().T
             self.FD_REGION = Matrix('Final demand by region',
-                                    fd_region.groupby('region').sum(0).T,
+                                    fd_region,
                                     rows=self.Z.rows,
-                                    columns=fd_region.groupby('region').sum(0).T.columns.to_list())
+                                    columns=fd_region.columns.to_list())
 
             self.regions = list(sorted(np.unique([r for r, s in self.Z.rows])))
             self.sectors = list(sorted(np.unique([s for r, s in self.Z.rows])))
@@ -136,7 +142,6 @@ class ExioBase(IO):
             pbar.update()
             pbar.set_description('Done')
 
-    @lru_cache()
     def _load_data(self):
         folder = f'IOT_{self.year}_{"ixi" if self.kind == "industry-by-industry" else "pxp"}'
         with ZipFile(self._data_file, 'r') as zf:
@@ -164,24 +169,16 @@ class ExioBase(IO):
             with zf.open(f'{folder}/finaldemands.txt', 'r') as csv_file:
                 FD_codes = pd.read_csv(csv_file, sep='\t', index_col=1)
 
-            with zf.open(f'{folder}/metadata.json', 'r') as json_file:
-                metadata = pd.read_json(json_file)
-
-        return z_raw, fd_raw, x_raw, metadata, sector_codes, FD_codes
+        return z_raw, fd_raw, x_raw, sector_codes, FD_codes
 
     def _download_data(self):
-        import requests
-
         try:
-            r = requests.get(self._url, stream=True)
-            with open(self._data_file, "wb") as f:
-                for chunk in r.iter_content(1024 * 5):
-                    f.write(chunk)
+            download_file(self._url, self._data_file, proxy=self._proxy, verify=self._verify)
             with open(FILES_LOG, 'a') as files_log:
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:
             warn(f"Couldn't download the data. Try downloading manually from {self._url} "
-                 f"and save the csv file as {self._file_id}.csv in {self._data_folder}")
+                 f"and save the zip file as {self._file_id}.zip in {DATA_FOLDER}")
             raise e
 
     @staticmethod

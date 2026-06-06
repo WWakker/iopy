@@ -1,11 +1,9 @@
-"""  Created on 17/11/2022::
-------------- test_exiobase -------------
-**Authors**: W. Wakker
-
-"""
-from iopy import ExioBase
+"""Network tests for the ExioBase loader (download real data; run with the 'network' marker)."""
+import pytest
+from iotables import ExioBase
 
 
+@pytest.mark.network
 class TestExioBase:
 
     def test_load(self):

@@ -1,17 +1,16 @@
-"""  Created on 03/10/2022::
-------------- matrix -------------
-**Authors**: W. Wakker
-
-"""
+"""A labelled 2-D ``numpy.ndarray`` subclass carrying region/sector row and column metadata."""
 import numpy as np
+import pandas as pd
 
 
 class Matrix(np.ndarray):
 
     def __new__(cls, info, input_array, rows, columns):
         obj = np.asarray(input_array).view(cls)
-        assert len(obj.shape) == 2, "Array must be 2-dimensional"
-        assert obj.shape == (len(rows), len(columns)), "Rows and columns do not have the shape of the array"
+        if len(obj.shape) != 2:
+            raise ValueError("Array must be 2-dimensional")
+        if obj.shape != (len(rows), len(columns)):
+            raise ValueError("Rows and columns do not have the shape of the array")
         obj.info = info
         obj.rows = rows
         obj.columns = columns
@@ -68,3 +67,18 @@ class Matrix(np.ndarray):
             numpy array
         """
         return np.asarray(self)
+
+    def to_pandas(self):
+        """Convert to pandas DataFrame
+
+        Returns:
+            pandas DataFrame
+        """
+        def _to_index(labels):
+            if len(labels) and isinstance(labels[0], tuple):
+                return pd.MultiIndex.from_tuples(labels, names=['region', 'sector'])
+            return pd.Index(labels)
+
+        return pd.DataFrame(np.asarray(self),
+                            index=_to_index(self.rows),
+                            columns=_to_index(self.columns))
