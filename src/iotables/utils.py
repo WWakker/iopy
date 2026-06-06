@@ -12,12 +12,6 @@ def assert_is_subset(subset, superset):
 def download_file(url, dest, proxy=None, verify=True):
     """Stream-download ``url`` to the local path ``dest``.
 
-    Uses ``curl_cffi`` with browser (TLS) impersonation so downloads succeed even
-    when the host sits behind Cloudflare's bot challenge. The OECD file server
-    (``webfs-sti.oecd.org``) rejects plain ``requests``/``urllib`` traffic with
-    HTTP 403; impersonating a real browser passes the challenge and is harmless
-    for the non-protected Eurostat/EXIOBASE hosts.
-
     Args:
         url: Source URL.
         dest: Local file path to write to.
