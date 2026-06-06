@@ -6,6 +6,10 @@ jobs:
   deploy:
     environment: Deploy
     runs-on: ubuntu-latest
+    permissions:
+      # Required for PyPI Trusted Publishing (OIDC); no API token/secret needed.
+      id-token: write
+      contents: read
     steps:
       - run: echo "Starting deployment to PyPi"
       - uses: actions/checkout@v5
@@ -24,9 +28,6 @@ jobs:
       - name: Check distribution metadata
         run: twine check dist/*
       - name: Deploy to PyPi
-        env:
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        run: |
-          twine upload dist/*
+        # Trusted Publishing: PyPI verifies this repo/workflow/environment via OIDC.
+        uses: pypa/gh-action-pypi-publish@release/v1
       - run: echo "Successfully deployed to PyPi"
