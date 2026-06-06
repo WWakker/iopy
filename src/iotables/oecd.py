@@ -6,7 +6,6 @@
 from iotables.mappings import oecd_sector_name_mapping, oecd_sector_name_mapping_2025, oecd_demand_items, \
     oecd_sector_2022_2021_mapping
 from iotables.matrix import Matrix
-from functools import lru_cache
 import numpy as np
 import pandas as pd
 from iotables.utils import ALPHA3_TO_ALPHA2
@@ -21,7 +20,7 @@ from iotables.globals import DATA_FOLDER, FILES_LOG
 from warnings import warn
 from functools import partial
 
-db_name = os.path.basename(__file__).rstrip('.py')
+db_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 def process_df(df):
@@ -147,7 +146,6 @@ class OECD(IO):
             pbar.update()
             pbar.set_description('Done')
 
-    @lru_cache()
     def _load_data(self):
         if self.version == '2021':
             filename = f'ICIO2021_{self.year}.csv'

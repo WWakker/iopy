@@ -20,8 +20,9 @@ pip install iotables
 ## Structure of input-output data
 
 Input-data model the economy in matrix form. Here, we explain input-output data using OECD data as an example.
-THE OECD input-output tables contain inputs and outputs in current million USD for 45 sectors and 66 countries as well 
-as rest-of-world. China and Mexico data are split into CN1, CN2, MX1, and MX2.
+The OECD input-output tables contain inputs and outputs in current million USD for a set of sectors and countries (the
+exact counts depend on the edition; see `config.py`) as well as rest-of-world. China and Mexico data are split into CN1,
+CN2, MX1, and MX2.
 
 ![OECD sctructure](res/OECD_structure.png)
 *Source*: OECD
@@ -173,7 +174,8 @@ This is the Ghosh equation, which defines the relation between production output
 ### Create an instance of the OECD class
 
 Creating an instance of the OECD class loads the OECD data and gives access to convenient attributes and methods. 
-An instance can be create as follows, specifiying a year between 1995 and 2018.
+An instance can be created as follows, specifying an available year for the chosen version (e.g. 1995-2018 for the
+`2021` version, up to 2022 for the `2025` versions).
 
 ```python
 import iotables 
@@ -227,7 +229,7 @@ import iotables
 
 oecd = iotables.OECD(version='2021', year=2018)
 
-df_l = oecd.leontief_demand_shock(shock=-10, regions=['FR', 'DE], sectors=['01T02', '35'])
+df_l = oecd.leontief_demand_shock(shock=-10, regions=['FR', 'DE'], sectors=['01T02', '35'])
 df_g = oecd.ghosh_supply_shock(shock=-10, regions=['FR', 'DE'], sectors=['01T02', '35'])
 ```
 

@@ -5,7 +5,6 @@
 """
 from iotables.mappings import figaro_sector_name_mapping_pxp_2022, figaro_sector_name_mapping_ixi_2022, figaro_demand_items
 from iotables.matrix import Matrix
-from functools import lru_cache
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -17,7 +16,7 @@ from iotables.base_io import IO
 from iotables.globals import DATA_FOLDER, FILES_LOG
 from iotables.utils import remove_downloaded_files, download_file
 
-db_name = os.path.basename(__file__).rstrip('.py')
+db_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 def process_df(df):
@@ -56,7 +55,8 @@ class Figaro(IO):
                    https) or a ``{scheme: url}`` dict
             verify: Verify the server's TLS certificate (``False`` to skip, or a CA bundle path)
         """
-        assert kind in {'industry-by-industry', 'product-by-product'}
+        if kind not in {'industry-by-industry', 'product-by-product'}:
+            raise ValueError("kind must be 'industry-by-industry' or 'product-by-product'")
 
         if version not in config['figaro'].keys():
             raise ValueError(
@@ -140,7 +140,6 @@ class Figaro(IO):
             pbar.update()
             pbar.set_description('Done')
 
-    @lru_cache()
     def _load_data(self):
         df = pd.read_csv(self._data_file, index_col=0)
         return df

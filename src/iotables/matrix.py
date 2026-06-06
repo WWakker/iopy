@@ -11,8 +11,10 @@ class Matrix(np.ndarray):
 
     def __new__(cls, info, input_array, rows, columns):
         obj = np.asarray(input_array).view(cls)
-        assert len(obj.shape) == 2, "Array must be 2-dimensional"
-        assert obj.shape == (len(rows), len(columns)), "Rows and columns do not have the shape of the array"
+        if len(obj.shape) != 2:
+            raise ValueError("Array must be 2-dimensional")
+        if obj.shape != (len(rows), len(columns)):
+            raise ValueError("Rows and columns do not have the shape of the array")
         obj.info = info
         obj.rows = rows
         obj.columns = columns

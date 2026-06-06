@@ -58,7 +58,7 @@ class TestOECD:
                               ((np.eye(oecd.rs) - oecd.A).I @ (
                                       oecd.FD * (custom_shock_vector / 100))) + oecd.X)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             oecd._shock(model='leontief')
 
         shock_vector = np.array([-.1 if r in EA and s == '35' else 0 for r, s in oecd.X.rows]).reshape(-1, 1)

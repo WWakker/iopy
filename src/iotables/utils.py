@@ -41,9 +41,20 @@ def download_file(url, dest, proxy=None, verify=True):
     r = requests.get(url, stream=True, impersonate='chrome', verify=verify, **kwargs)
     if not r.ok:
         raise ConnectionError(r.reason or f'HTTP {r.status_code}')
-    with open(dest, 'wb') as f:
-        for chunk in r.iter_content():
-            f.write(chunk)
+
+    # Download to a temporary file and atomically move it into place only once the
+    # stream completes, so an interrupted download never leaves a truncated file in
+    # the cache (which would otherwise load as a wrong-shaped, silently corrupt matrix).
+    tmp = dest + '.part'
+    try:
+        with open(tmp, 'wb') as f:
+            for chunk in r.iter_content():
+                f.write(chunk)
+        os.replace(tmp, dest)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
 
 
 def replace_if_exists(x, mapping):
@@ -86,7 +97,7 @@ def remove_downloaded_files(database: str = 'all',
             print(f'no files found for {database}, only for {list(files.keys())}')
             return
         other_files = {k: v for k, v in files.items() if k != database}
-        files = files[db]
+        files = files[database]
     else:
         files = {item for sublist in files.values() for item in sublist}
     for path in files:

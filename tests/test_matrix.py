@@ -39,7 +39,7 @@ class TestMatrix:
             Matrix('something', *process_df(df))
 
     def test2(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             Matrix('something', [1, 2, 3], ['something'], ['something'])
 
     def testI(self):

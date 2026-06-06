@@ -4,7 +4,6 @@
 """
 
 from iotables.matrix import Matrix
-from functools import lru_cache
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -17,7 +16,7 @@ from warnings import warn
 from iotables.globals import DATA_FOLDER, FILES_LOG
 from iotables.utils import remove_downloaded_files, download_file
 
-db_name = os.path.basename(__file__).rstrip('.py')
+db_name = os.path.splitext(os.path.basename(__file__))[0]
 
 
 def process_df(df):
@@ -48,7 +47,8 @@ class ExioBase(IO):
             verify: Verify the server's TLS certificate (``False`` to skip, or a CA bundle path)
         """
 
-        assert kind in {'industry-by-industry', 'product-by-product'}
+        if kind not in {'industry-by-industry', 'product-by-product'}:
+            raise ValueError("kind must be 'industry-by-industry' or 'product-by-product'")
 
         if version not in config['exiobase'].keys():
             raise ValueError(
@@ -100,7 +100,8 @@ class ExioBase(IO):
 
             # Create matrices
             pbar.set_description('Creating matrices...')
-            assert self._Z_raw.shape[0] == self._Z_raw.shape[1]
+            if self._Z_raw.shape[0] != self._Z_raw.shape[1]:
+                raise ValueError('Intermediate-use matrix Z is not square; the downloaded file may be corrupt')
             self.rs = config['exiobase'][version]['num_regions'][kind] * config['exiobase'][version]['num_sectors'][kind]
             self.Z = Matrix('Intermediate use',
                             *process_df(self._Z_raw))
@@ -143,7 +144,6 @@ class ExioBase(IO):
             pbar.update()
             pbar.set_description('Done')
 
-    @lru_cache()
     def _load_data(self):
         folder = f'IOT_{self.year}_{"ixi" if self.kind == "industry-by-industry" else "pxp"}'
         with ZipFile(self._data_file, 'r') as zf:
@@ -183,7 +183,7 @@ class ExioBase(IO):
                 files_log.write(db_name + ';' + self._data_file + '\n')
         except Exception as e:
             warn(f"Couldn't download the data. Try downloading manually from {self._url} "
-                 f"and save the csv file as {self._file_id}.csv in {self._data_folder}")
+                 f"and save the zip file as {self._file_id}.zip in {DATA_FOLDER}")
             raise e
 
     @staticmethod

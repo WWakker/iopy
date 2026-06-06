@@ -52,7 +52,7 @@ class TestFigaro:
                               ((np.eye(f.rs) - f.A).I @ (
                                       f.FD * (custom_shock_vector / 100))) + f.X)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             f._shock(model='leontief')
 
         shock_vector = np.array([-.1 if r in EA and s == 'A01' else 0 for r, s in f.X.rows]).reshape(-1, 1)
