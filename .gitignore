@@ -16,3 +16,7 @@ build/
 dist/
 *.egg-info/
 src/*.egg-info/
+
+# editor / tooling
+.vscode/
+CLAUDE.md
