@@ -9,7 +9,7 @@ and Miller & Blair (2022) is recommended for background on the theory, but the b
 
 Currently the following databases are supported:
 - [OECD](http://oe.cd/icio)
-- [Figaro](https://ec.europa.eu/eurostat/web/esa-supply-use-input-tables/figaro)
+- [Figaro](https://ec.europa.eu/eurostat/web/esa-supply-use-input-tables)
 - [ExioBase](https://www.exiobase.eu/)
 
 ## Installation
@@ -19,7 +19,7 @@ pip install iotables
 
 ## Structure of input-output data
 
-Input-data model the economy in matrix form. Here, we explain input-output data using OECD data as an example.
+Input-output tables model the economy in matrix form. Here, we explain input-output data using OECD data as an example.
 The OECD input-output tables contain inputs and outputs in current million USD for a set of sectors and countries (the
 exact counts depend on the edition; see `config.py`) as well as rest-of-world. China and Mexico data are split into CN1,
 CN2, MX1, and MX2.
@@ -179,14 +179,14 @@ An instance can be created as follows, specifying an available year for the chos
 
 ```python
 import iotables 
-oecd = iotables.OECD(version='2021', year=2018, refresh=False)
+oecd = iotables.OECD(version='2025', year=2022, refresh=False)
 ```
 
 Similary, an instance can be created for other data, for example Figaro and ExioBase as
 
 ```python
 import iotables 
-figaro = iotables.Figaro(version='2025', year=2020, kind='industry-by-industry')
+figaro = iotables.Figaro(version='2025', year=2022, kind='industry-by-industry')
 exio = iotables.ExioBase(version='3.81', year=2022, kind='industry-by-industry')
 ```
 
@@ -227,7 +227,7 @@ When running a Leontief or Ghosh shock, the percentage shock to final demand/pri
 ```python
 import iotables
 
-oecd = iotables.OECD(version='2021', year=2018)
+oecd = iotables.OECD(version='2025', year=2022)
 
 df_l = oecd.leontief_demand_shock(shock=-10, regions=['FR', 'DE'], sectors=['01T02', '35'])
 df_g = oecd.ghosh_supply_shock(shock=-10, regions=['FR', 'DE'], sectors=['01T02', '35'])
