@@ -10,6 +10,8 @@
 **/__pycache__/
 **/.temp_data/
 test.py
+.DS_Store
+**/.DS_Store
 
 # packaging build artifacts
 build/
