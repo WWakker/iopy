@@ -1,8 +1,4 @@
-"""  Created on 06/09/2022::
-------------- mappings -------------
-**Authors**: W. Wakker
-
-"""
+"""Per-database sector-code → human-name maps, demand-item lists, and the OECD 2022→2021 remap."""
 
 oecd_sector_2022_2021_mapping = {'A01_02': '01T02',
                                  'A03': '03',

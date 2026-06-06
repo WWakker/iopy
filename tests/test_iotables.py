@@ -1,9 +1,5 @@
-"""  Created on 22/11/2022::
-------------- test_iotables -------------
-**Authors**: W. Wakker
-
-"""
-import os
+"""Offline tests for top-level helpers and the shared downloader."""
+import pytest
 import iotables
 from iotables import utils
 
@@ -64,3 +60,76 @@ class TestRemoveDownloadedFiles:
     def test_no_log_is_noop(self, tmp_path, monkeypatch):
         monkeypatch.setattr(utils, 'FILES_LOG', str(tmp_path / 'missing.txt'))
         utils.remove_downloaded_files(database='all', verbose=False)  # must not raise
+
+
+class _FakeResponse:
+    def __init__(self, chunks, headers, ok=True, status_code=200):
+        self._chunks = chunks
+        self.headers = headers
+        self.ok = ok
+        self.status_code = status_code
+        self.reason = 'OK'
+
+    def iter_content(self):
+        return iter(self._chunks)
+
+
+class TestDownloadFile:
+    """Offline tests for download_file's atomic + integrity behaviour (no network)."""
+
+    def _patch(self, monkeypatch, response):
+        import curl_cffi
+        monkeypatch.setattr(curl_cffi.requests, 'get', lambda *a, **k: response)
+
+    def test_truncated_body_raises_and_leaves_no_files(self, tmp_path, monkeypatch):
+        # Server advertises 100 bytes but only streams 50: a silent truncation.
+        resp = _FakeResponse([b'x' * 50], {'Content-Length': '100'})
+        self._patch(monkeypatch, resp)
+        dest = tmp_path / 'data.zip'
+
+        with pytest.raises(ConnectionError):
+            utils.download_file('http://example/data.zip', str(dest))
+
+        assert not dest.exists()
+        assert not (tmp_path / 'data.zip.part').exists()
+
+    def test_complete_body_succeeds(self, tmp_path, monkeypatch):
+        resp = _FakeResponse([b'ab', b'cd'], {'Content-Length': '4'})
+        self._patch(monkeypatch, resp)
+        dest = tmp_path / 'data.zip'
+
+        utils.download_file('http://example/data.zip', str(dest))
+
+        assert dest.read_bytes() == b'abcd'
+        assert not (tmp_path / 'data.zip.part').exists()
+
+    def test_length_check_skipped_for_encoded_body(self, tmp_path, monkeypatch):
+        # gzip/chunked (e.g. CIRCABC): advertised length differs from decoded bytes,
+        # so the check must be skipped rather than false-positive.
+        resp = _FakeResponse([b'x' * 50], {'Content-Length': '100', 'Content-Encoding': 'gzip'})
+        self._patch(monkeypatch, resp)
+        dest = tmp_path / 'data.csv'
+
+        utils.download_file('http://example/data.csv', str(dest))
+
+        assert dest.read_bytes() == b'x' * 50
+
+    def test_no_content_length_succeeds(self, tmp_path, monkeypatch):
+        resp = _FakeResponse([b'hello'], {})
+        self._patch(monkeypatch, resp)
+        dest = tmp_path / 'data.csv'
+
+        utils.download_file('http://example/data.csv', str(dest))
+
+        assert dest.read_bytes() == b'hello'
+
+    def test_http_error_raises(self, tmp_path, monkeypatch):
+        resp = _FakeResponse([], {}, ok=False, status_code=504)
+        resp.reason = 'Gateway Timeout'
+        self._patch(monkeypatch, resp)
+        dest = tmp_path / 'data.zip'
+
+        with pytest.raises(ConnectionError):
+            utils.download_file('http://example/data.zip', str(dest))
+
+        assert not dest.exists()

@@ -1,7 +1,4 @@
-"""  Created on 15/11/2022::
-------------- exiobase -------------
-**Authors**: S. Boldrini
-"""
+"""Loader for EXIOBASE inter-country input-output data."""
 
 from iotables.matrix import Matrix
 import numpy as np
@@ -79,7 +76,7 @@ class ExioBase(IO):
             # Load
             pbar.set_description('Loading data...')
             self.df = None
-            self._Z_raw, self._FD_raw, self._X_raw, self._metadata, self._sector_codes, self._FD_codes = self._load_data()
+            self._Z_raw, self._FD_raw, self._X_raw, self._sector_codes, self._FD_codes = self._load_data()
 
             exiobase_sector_name_mapping = self._sector_codes.reset_index().set_index('CodeNr')['Name'].to_dict()
             exiobase_FD_name_mapping = self._FD_codes.reset_index().set_index('CodeNr')['Name'].to_dict()
@@ -127,10 +124,11 @@ class ExioBase(IO):
                                      columns=[r for r, s in self.FD_GRAN.columns]).T
             fd_region.index.name = 'region'
 
+            fd_region = fd_region.groupby('region').sum().T
             self.FD_REGION = Matrix('Final demand by region',
-                                    fd_region.groupby('region').sum(0).T,
+                                    fd_region,
                                     rows=self.Z.rows,
-                                    columns=fd_region.groupby('region').sum(0).T.columns.to_list())
+                                    columns=fd_region.columns.to_list())
 
             self.regions = list(sorted(np.unique([r for r, s in self.Z.rows])))
             self.sectors = list(sorted(np.unique([s for r, s in self.Z.rows])))
@@ -171,10 +169,7 @@ class ExioBase(IO):
             with zf.open(f'{folder}/finaldemands.txt', 'r') as csv_file:
                 FD_codes = pd.read_csv(csv_file, sep='\t', index_col=1)
 
-            with zf.open(f'{folder}/metadata.json', 'r') as json_file:
-                metadata = pd.read_json(json_file)
-
-        return z_raw, fd_raw, x_raw, metadata, sector_codes, FD_codes
+        return z_raw, fd_raw, x_raw, sector_codes, FD_codes
 
     def _download_data(self):
         try:

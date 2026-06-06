@@ -1,8 +1,4 @@
-"""  Created on 03/10/2022::
-------------- matrix -------------
-**Authors**: W. Wakker
-
-"""
+"""A labelled 2-D ``numpy.ndarray`` subclass carrying region/sector row and column metadata."""
 import numpy as np
 import pandas as pd
 

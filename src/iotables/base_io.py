@@ -1,8 +1,4 @@
-"""  Created on 18/10/2022::
-------------- io -------------
-**Authors**: W. Wakker
-
-"""
+"""Shared analysis engine: derives the coefficient/inverse matrices and runs shocks."""
 from warnings import warn
 from iotables.matrix import Matrix
 from iotables.utils import assert_is_subset
@@ -22,6 +18,7 @@ class IO:
                            'X',
                            'V',
                            'FD',
+                           'FD_GRAN',
                            'ADD',
                            'FD_REGION',
                            'rs',
@@ -29,7 +26,9 @@ class IO:
                            'regions',
                            'sectors',
                            'unit',
-                           'demand_items']
+                           'demand_items',
+                           'reference',
+                           'contact']
         assert_is_subset(necessary_attrs, dir(self))
 
         # Coefficients matrix, replace 0 with 1 to allow inversion

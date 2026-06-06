@@ -1,8 +1,4 @@
-"""  Created on 06/09/2022::
-------------- oecd -------------
-**Authors**: W. Wakker
-
-"""
+"""Loader for OECD ICIO inter-country input-output data."""
 from iotables.mappings import oecd_sector_name_mapping, oecd_sector_name_mapping_2025, oecd_demand_items, \
     oecd_sector_2022_2021_mapping
 from iotables.matrix import Matrix
@@ -126,7 +122,7 @@ class OECD(IO):
             # Create region level FD
             fd_region = pd.DataFrame(self.FD_GRAN, columns=[r for r, s in self.FD_GRAN.columns]).T
             fd_region.index.name = 'region'
-            fd_region = fd_region.groupby('region').sum(0).T
+            fd_region = fd_region.groupby('region').sum().T
             self.FD_REGION = Matrix('Final demand by region',
                                     fd_region,
                                     rows=self.Z.rows,

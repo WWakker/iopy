@@ -1,8 +1,4 @@
-"""  Created on 14/10/2022::
-------------- figaro -------------
-**Authors**: W. Wakker
-
-"""
+"""Loader for Eurostat Figaro inter-country input-output data."""
 from iotables.mappings import figaro_sector_name_mapping_pxp_2022, figaro_sector_name_mapping_ixi_2022, figaro_demand_items
 from iotables.matrix import Matrix
 import numpy as np
@@ -121,7 +117,7 @@ class Figaro(IO):
             # Create region level FD
             fd_region = pd.DataFrame(self.FD_GRAN, columns=[r for r, s in self.FD_GRAN.columns]).T
             fd_region.index.name = 'region'
-            fd_region = fd_region.groupby('region').sum(0).T
+            fd_region = fd_region.groupby('region').sum().T
             self.FD_REGION = Matrix('Final demand by region',
                                     fd_region,
                                     rows=self.Z.rows,

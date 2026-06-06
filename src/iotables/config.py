@@ -1,8 +1,4 @@
-"""  Created on 08/10/2022::
-------------- config -------------
-**Authors**: W. Wakker
-
-"""
+"""Single source of truth for the data that exists: download links and shapes per database."""
 
 
 def _chunk_links(base, chunks):

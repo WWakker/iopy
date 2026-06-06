@@ -1,8 +1,4 @@
-"""  Created on 11/10/2022::
-------------- utils -------------
-**Authors**: W. Wakker
-
-"""
+"""Shared helpers: validation, the downloader, cache cleanup, and country-code maps."""
 from iotables.globals import FILES_LOG
 from collections import defaultdict
 import os
@@ -47,9 +43,22 @@ def download_file(url, dest, proxy=None, verify=True):
     # the cache (which would otherwise load as a wrong-shaped, silently corrupt matrix).
     tmp = dest + '.part'
     try:
+        written = 0
         with open(tmp, 'wb') as f:
             for chunk in r.iter_content():
                 f.write(chunk)
+                written += len(chunk)
+
+        # Guard against a silently truncated body (server returns 200 then closes the
+        # stream early). Only enforce when the server advertised a length and did not
+        # transform the bytes -- e.g. CIRCABC serves gzip/chunked with no Content-Length,
+        # where the written size legitimately differs from any advertised length.
+        content_encoding = (r.headers.get('Content-Encoding') or '').lower()
+        expected = r.headers.get('Content-Length')
+        if expected is not None and content_encoding in ('', 'identity') and written != int(expected):
+            raise ConnectionError(
+                f'Incomplete download from {url}: got {written} bytes, expected {expected}')
+
         os.replace(tmp, dest)
     except BaseException:
         if os.path.exists(tmp):

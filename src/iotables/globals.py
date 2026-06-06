@@ -1,8 +1,4 @@
-"""  Created on 22/11/2022::
-------------- globals -------------
-**Authors**: W. Wakker
-
-"""
+"""Module-level constants: the download cache location and bookkeeping paths."""
 import os
 
 # Downloaded source files are cached in a user-level cache directory rather than inside

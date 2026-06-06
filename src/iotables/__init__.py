@@ -1,4 +1,4 @@
-import os
+import os as _os
 from importlib.metadata import version as _version, PackageNotFoundError as _PackageNotFoundError
 from iotables.globals import DATA_FOLDER as __DATA_FOLDER
 from iotables.globals import IS_WINDOWS as __IS_WINDOWS
@@ -40,6 +40,4 @@ def get_size_data_folder():
     return get_size(__DATA_FOLDER)
 
 
-os.makedirs(__DATA_FOLDER, exist_ok=True)
-
-del os
+_os.makedirs(__DATA_FOLDER, exist_ok=True)

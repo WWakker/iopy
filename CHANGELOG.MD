@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Loader `db_name` derivation used `str.rstrip('.py')` (a character set, not a suffix)
 - Dropped `lru_cache` on `_load_data`, which pinned every loader instance (and its data) in memory
 - Downloads are now atomic (written to a `.part` file and moved into place on completion), so an interrupted download no longer leaves a truncated file in the cache
+- `download_file` now verifies the downloaded size against `Content-Length` (when advertised and unencoded) and raises on a truncated body
+### Other
+- Added a `py.typed` marker, `[project.urls]`, Python-version classifiers, and a GitHub Actions CI (offline tests across Python 3.9-3.13 + build/twine check)
+- Network tests are marked `network` and moved into fixtures, so the suite collects and the offline tests run without a connection (`pytest -m "not network"`)
 ___
 
 
