@@ -1,5 +1,10 @@
 # iotables
 
+[![PyPI version](https://img.shields.io/pypi/v/iotables)](https://pypi.org/project/iotables/)
+[![PyPI Downloads](https://static.pepy.tech/badge/iotables)](https://pepy.tech/projects/iotables)
+[![Tests](https://img.shields.io/github/actions/workflow/status/WWakker/iotables/ci.yml?branch=main&label=tests)](https://github.com/WWakker/iotables/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/WWakker/iotables)](https://github.com/WWakker/iotables/blob/main/LICENSE)
+
 ## Description
 
 This repository contains Python codes to easily load inter-country input-output data and give access to convenient attributes and methods 
